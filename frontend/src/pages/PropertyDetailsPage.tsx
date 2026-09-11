@@ -10,6 +10,7 @@ import PropertyAbout from '../components/property-details/PropertyAbout';
 import PropertyAmenities from '../components/property-details/PropertyAmenities';
 import PropertyLocation from '../components/property-details/PropertyLocation';
 import ScheduleViewingCard from '../components/property-details/ScheduleViewingCard';
+import BlockchainRegistryCard from '../components/property-details/BlockchainRegistryCard';
 import { propertiesAPI } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import StructuredData from '../components/common/StructuredData';
@@ -58,7 +59,7 @@ const PropertyDetailsPage: React.FC = () => {
         } else {
           setError('Property not found');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Failed to fetch property:', err);
         setError('Failed to load property details. Please try again.');
       } finally {
@@ -66,7 +67,7 @@ const PropertyDetailsPage: React.FC = () => {
       }
     };
 
-    fetchProperty();
+    void fetchProperty();
   }, [id]);
 
   // Map availability to status
@@ -113,27 +114,29 @@ const PropertyDetailsPage: React.FC = () => {
   // Brazilian addresses typically end with state, so use second-to-last part as city
   const cityParts = property.location.split(',').map(s => s.trim());
   const city = cityParts.length >= 3
-    ? cityParts[cityParts.length - 2]       // "Area, City, State" → City
+    ? cityParts[cityParts.length - 2]
     : cityParts.length === 2
-      ? cityParts[0]                         // "City, State" → City
-      : cityParts[0];                        // "City" → City
+      ? cityParts[0]
+      : cityParts[0];
 
   // Parse amenities — handle legacy data where amenities may be a JSON string
   const parseAmenities = (amenities: string[]): string[] => {
     if (!amenities || amenities.length === 0) return [];
-    // If single element that looks like a JSON array, parse it
     if (amenities.length === 1 && typeof amenities[0] === 'string' && amenities[0].startsWith('[')) {
       try {
-        const parsed = JSON.parse(amenities[0]);
-        if (Array.isArray(parsed)) return parsed;
-      } catch { /* fall through */ }
+        const parsed: unknown = JSON.parse(amenities[0]);
+        if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+          return parsed;
+        }
+      } catch {
+        // Fall through to the original amenities array.
+      }
     }
     return amenities;
   };
 
   return (
     <div className="bg-white min-h-screen">
-      {/* Property Structured Data for SEO */}
       <StructuredData
         type="property"
         data={{
@@ -149,19 +152,15 @@ const PropertyDetailsPage: React.FC = () => {
         }}
       />
 
-      {/* Navigation */}
       <Navbar />
 
-      {/* Breadcrumb Navigation */}
       <PropertyBreadcrumb
         city={city}
         propertyName={property.title}
       />
 
-      {/* Hero Image */}
       <PropertyHeroImage image={property.image?.[0]} />
 
-      {/* Property Header with Price & Specs */}
       <PropertyHeader
         status={getStatus(property.availability)}
         refNumber={`#${property._id.slice(-8).toUpperCase()}`}
@@ -173,22 +172,17 @@ const PropertyDetailsPage: React.FC = () => {
         sqm={property.sqm}
       />
 
-      {/* Main Content Area */}
       <div className="bg-[#F2EFE9] py-12">
         <div className="max-w-[1280px] mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Main Content */}
             <div className="lg:col-span-2">
               <div className="bg-white border border-[#E6E0DA] rounded-2xl p-8 shadow-sm">
-                {/* About Section */}
                 <PropertyAbout description={property.description} />
 
-                {/* Amenities Section */}
                 <PropertyAmenities
                   amenities={parseAmenities(property.amenities)}
                 />
 
-                {/* Location Section */}
                 <PropertyLocation
                   location={property.location}
                   propertyName={property.title}
@@ -197,17 +191,23 @@ const PropertyDetailsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right Column - Schedule Viewing Sidebar */}
             <div className="lg:col-span-1">
               <ScheduleViewingCard
                 property={{ name: property.title, id: property._id }}
+              />
+
+              <BlockchainRegistryCard
+                property={{
+                  id: property._id,
+                  address: property.location,
+                  price: property.price,
+                }}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Simple Footer */}
       <SimpleFooter />
     </div>
   );

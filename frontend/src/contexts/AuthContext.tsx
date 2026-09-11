@@ -41,7 +41,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = useCallback(async (email: string, password: string, rememberMe: boolean = false) => {
-    const { data } = await userAPI.login({ email, password, rememberMe });
+    // rememberMe controls client-side session behavior; it is not part of the
+    // backend login payload.
+    const { data } = await userAPI.login({ email, password });
     if (data.success && data.token) {
       localStorage.setItem('REChain_token', data.token);
       localStorage.setItem('REChain_user', JSON.stringify(data.user));

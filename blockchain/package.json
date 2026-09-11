@@ -1,0 +1,19 @@
+{
+  "name": "rechain-property-registry",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:amoy": "hardhat run scripts/deploy-property-registry.ts --network amoy"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.7",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.0.0",
+    "ethers": "6.14.4",
+    "hardhat": "^3.16.0",
+    "typescript": "^5.9.0"
+  }
+}
