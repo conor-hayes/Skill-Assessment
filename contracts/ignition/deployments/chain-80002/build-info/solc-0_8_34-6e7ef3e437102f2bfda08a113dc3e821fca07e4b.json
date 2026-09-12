@@ -1,0 +1,49 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_34-6e7ef3e437102f2bfda08a113dc3e821fca07e4b",
+  "solcVersion": "0.8.34",
+  "solcLongVersion": "0.8.34+commit.80d5c536",
+  "compilerType": "solc",
+  "toolVersions": {
+    "hardhat": "3.16.0"
+  },
+  "userSourceNameMap": {
+    "contracts/PropertyRegistry.sol": "project/contracts/PropertyRegistry.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "osaka",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/PropertyRegistry.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.19;\n\n/**\n * @title PropertyRegistry\n * @notice A decentralized registry for registering, transferring, and querying real estate property titles.\n * @dev Optimized for gas efficiency with calldata parameters, unchecked increments, single-slot reads, and custom errors.\n */\ncontract PropertyRegistry {\n    /// @notice Defines the structure of an on-chain registered property\n    struct Property {\n        string propertyAddress;\n        address owner;\n        uint256 price;\n    }\n\n    /// @notice Tracks total registered properties (also serves as the next unique property ID)\n    uint256 public propertyCounter;\n\n    /// @notice Mapping from unique property ID to its Property record\n    mapping(uint256 => Property) public properties;\n\n    // --- Events ---\n    event PropertyCreated(uint256 indexed propertyId, address indexed owner, uint256 price);\n    event PropertyTransferred(uint256 indexed propertyId, address indexed oldOwner, address indexed newOwner);\n\n    // --- Custom Errors (Gas-efficient, replacing string reverts) ---\n    error NotOwner();\n    error InvalidNewOwner();\n    error PropertyNotFound();\n    error EmptyPropertyAddress();\n    error InvalidPrice();\n\n    /**\n     * @notice Registers a new property in the registry.\n     * @dev Uses `calldata` for `_address` to avoid memory allocation and copy overhead.\n     *      Counter increment is wrapped in `unchecked` since uint256 overflow is practically impossible.\n     * @param _address The physical or legal address identifier of the property.\n     * @param _price The valuation of the property in wei.\n     * @return propertyId The sequential ID assigned to the new property.\n     */\n    function registerProperty(string calldata _address, uint256 _price) external returns (uint256 propertyId) {\n        if (bytes(_address).length == 0) revert EmptyPropertyAddress();\n        if (_price == 0) revert InvalidPrice();\n\n        propertyId = propertyCounter;\n\n        properties[propertyId] = Property({\n            propertyAddress: _address,\n            owner: msg.sender,\n            price: _price\n        });\n\n        unchecked {\n            ++propertyCounter;\n        }\n\n        emit PropertyCreated(propertyId, msg.sender, _price);\n    }\n\n    /**\n     * @notice Transfers ownership of a registered property to another address.\n     * @dev Enforces access control, prevents transfers to zero address or current owner,\n     *      and caches storage reads to minimize SLOAD costs.\n     * @param _propertyId The ID of the property to transfer.\n     * @param _newOwner The recipient address of the property title.\n     */\n    function transferOwnership(uint256 _propertyId, address _newOwner) external {\n        if (_propertyId >= propertyCounter) revert PropertyNotFound();\n        if (_newOwner == address(0)) revert InvalidNewOwner();\n\n        address currentOwner = properties[_propertyId].owner;\n        if (currentOwner != msg.sender) revert NotOwner();\n        if (_newOwner == currentOwner) revert InvalidNewOwner();\n\n        properties[_propertyId].owner = _newOwner;\n\n        emit PropertyTransferred(_propertyId, msg.sender, _newOwner);\n    }\n\n    /**\n     * @notice Retrieves the full details of a registered property.\n     * @param _propertyId The unique ID of the property.\n     * @return The Property struct containing propertyAddress, owner, and price.\n     */\n    function getProperty(uint256 _propertyId) external view returns (Property memory) {\n        if (_propertyId >= propertyCounter) revert PropertyNotFound();\n        return properties[_propertyId];\n    }\n}"
+      }
+    }
+  }
+}

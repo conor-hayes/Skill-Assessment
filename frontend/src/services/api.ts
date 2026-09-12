@@ -42,6 +42,12 @@ apiClient.interceptors.response.use(
 // API Endpoints — aligned with backend routes
 // ═══════════════════════════════════════════════════════════
 
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
 // User Authentication
 // Backend register expects { name, email, password }
 // We transform fullName → name here so the UI can keep using fullName
@@ -53,7 +59,7 @@ export const userAPI = {
       password: data.password,
     }),
 
-  login: (data: { email: string; password: string }) =>
+  login: (data: LoginCredentials) =>
     apiClient.post('/users/login', data),
 
   forgotPassword: (email: string) =>

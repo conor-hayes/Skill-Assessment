@@ -134,8 +134,12 @@ temp/
 *.tmp
 *.temp
 
-# Claude Code internal files
+# Agent internal files
 .claude/
+.agents/
+**/.agents/
+**/.agent/
+**/AGENTS.md
 backend/.agent/
 backend/.agents/
 backend/skills-lock.json

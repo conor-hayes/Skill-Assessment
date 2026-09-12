@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { userAPI } from '../services/api';
+import { userAPI, LoginCredentials } from '../services/api';
 
 interface User {
   _id: string;
@@ -41,7 +41,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = useCallback(async (email: string, password: string, rememberMe: boolean = false) => {
-    const { data } = await userAPI.login({ email, password, rememberMe });
+    const credentials: LoginCredentials = { email, password, rememberMe };
+    const { data } = await userAPI.login(credentials);
     if (data.success && data.token) {
       localStorage.setItem('REChain_token', data.token);
       localStorage.setItem('REChain_user', JSON.stringify(data.user));
