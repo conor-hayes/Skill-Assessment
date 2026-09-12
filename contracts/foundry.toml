@@ -10,7 +10,7 @@ optimizer_runs = 200
 amoy = "${AMOY_RPC_URL}"
 
 [etherscan]
-# Polygonscan's v2 unified API key works across chains, incl. Amoy (80002)
-amoy = { key = "${POLYGONSCAN_API_KEY}", chain = 80002, url = "https://api-amoy.polygonscan.com/api" }
+# Polygonscan retired its own per-chain API in favor of Etherscan's unified V2 API
+amoy = { key = "${POLYGONSCAN_API_KEY}", chain = 80002 }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
