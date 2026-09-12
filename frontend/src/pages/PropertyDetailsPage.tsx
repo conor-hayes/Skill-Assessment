@@ -10,6 +10,7 @@ import PropertyAbout from '../components/property-details/PropertyAbout';
 import PropertyAmenities from '../components/property-details/PropertyAmenities';
 import PropertyLocation from '../components/property-details/PropertyLocation';
 import ScheduleViewingCard from '../components/property-details/ScheduleViewingCard';
+import PropertyBlockchainPanel from '../components/property-details/PropertyBlockchainPanel';
 import { propertiesAPI } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
 import StructuredData from '../components/common/StructuredData';
@@ -195,6 +196,11 @@ const PropertyDetailsPage: React.FC = () => {
                   googleMapLink={property.googleMapLink}
                 />
               </div>
+
+              {/* Blockchain Registration */}
+              <PropertyBlockchainPanel
+                property={{ id: property._id, address: property.location, price: property.price }}
+              />
             </div>
 
             {/* Right Column - Schedule Viewing Sidebar */}
