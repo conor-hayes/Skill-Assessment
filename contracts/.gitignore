@@ -1,0 +1,9 @@
+
+out/
+cache/
+lib/
+.env
+.env.local
+broadcast/*/31337/
+
+.DS_Store
